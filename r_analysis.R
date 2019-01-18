@@ -5,51 +5,64 @@ setwd("C:/Users/Stanislaw Lem/Documents/Academic/University/UCU/Semester 7/ACCME
 #libraires
 library(tidyverse)
 library(ggplot2)
-library(sp)
 library(ggthemes)
 library(dplyr)
 library(reshape2)
+library(xtable)
+options(xtable.floating = FALSE)
+options(xtable.timestamp = "")
 
 #import data
 data_raw <- read.csv('kurd_kurdistan.csv', stringsAsFactors = FALSE)
 
-test <-1
-
+#Process data
 data_proc <- data_raw %>%
-  mutate(deaths_total=deaths_a+deaths_b+deaths_civilians) 
+  melt(id.var='year') %>% #change df to long form. Look through data_proc$variable to understand what this does
+  filter(variable == 'deaths_b'| variable == 'deaths_a'|variable == 'deaths_civilians') %>% #filter for death_ cols
+  mutate(value_num = as.numeric(value) ) %>% #new col with val numeric instead of char
+  group_by(year,variable) %>% #aggregate by year and variable
+  summarise(total_deaths = sum(value_num)) #sumerise so that each year,variable pair has sum of deaths
 
-data_proc.melt <- data_proc %>%
-  melt(id.var='year') %>%
-  filter(variable == 'deaths_b'| variable == 'deaths_a'|variable == 'deaths_civilians') %>%
-  mutate(value_num = as.numeric(value) ) %>%
-  group_by(year,variable) %>%
-  summarise(total_deaths = sum(value_num))
-
-data_proc.melt$value2 <- as.numeric(data_proc.melt$value )
-  
-ggplot(data_proc.melt, aes(x = year, y = total_deaths, fill=variable)) + 
-  geom_bar(stat = "identity")
-  labs(title="Turkey-Kurdistan Conflict", subtitle="Incidences of Violence 1989-2015")+
+#Plot processed data as bar graph
+ggplot(data_proc, aes(x = year, y = total_deaths, fill=variable)) + #assigning fill to var lets us stack
+  geom_bar(stat = "identity")+
+  labs(title="Turkey-Kurdistan Conflict", 
+       subtitle="Number of Deaths per Year \n1989-2015")+
+  ylab("Deaths")+
   xlab("Year")+
-  ylab("No. Violent Incidents")+
-  theme(panel.background = element_rect(fill = "lightblue",colour = "lightblue", size = 0.5, linetype = "solid"))
+  scale_fill_discrete(name="Party",
+                     labels=c("Government\nof Turkey", "PKK", "Civilians"))+ #changes legend labels
+  theme(panel.background = element_rect(fill = "lightblue",
+                                        colour = "lightblue",
+                                        size = 0.5, linetype = "solid"),
+                                        axis.title.y = element_text(size = 12),
+                                        axis.title.x = element_text(size = 12))
 
-ggplot(data_proc.melt, aes(fill=death_id,x=year,y=value))+
-  geom_bar(stat="identity",position="stack")
 
-#initial exploration plots
-
-#Year 
-ggplot(data = data_proc, width=1)+
-  
-  
-  geom_bar(stat="identity",aes(x=year,y=deaths_total))+
-  geom_bar(aes(x=year),fill='red')+
-  #geom_bar(aes(x=data_raw$deaths_civilians,))+
-  labs(title="Turkey-Kurdistan Conflict", subtitle="Incidences of Violence 1989-2015")+
+#plot for civilian deaths only
+ggplot(data_proc %>% filter(variable == 'deaths_civilians'), #use pipe to filter
+       aes(x = year,
+           y = total_deaths)) + #assigning fill to var lets us stack
+  geom_bar(stat = "identity")+
+  labs(title="Turkey-Kurdistan Conflict", 
+       subtitle="Number of Civilian Deaths per Year \n1989-2015")+
+  ylab("Deaths")+
   xlab("Year")+
-  ylab("No. Violent Incidents")
-  theme(panel.background = element_rect(fill = "lightblue",colour = "lightblue", size = 0.5, linetype = "solid"))
+  theme(panel.background = element_rect(fill = "lightblue",
+                                        colour = "lightblue",
+                                        size = 0.5, linetype = "solid"),
+                                        axis.title.y = element_text(size = 12),
+                                        axis.title.x = element_text(size = 12))
+
+#Creating table for latex
+data(data_proc)
+xtable(data_proc[1:10, ])
+
+
+
+
+  
+
 
 
 
