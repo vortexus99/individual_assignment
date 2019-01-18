@@ -9,11 +9,13 @@ library(ggthemes)
 library(dplyr)
 library(reshape2)
 library(xtable)
+library(plotly)
 options(xtable.floating = FALSE)
 options(xtable.timestamp = "")
 
 #import data
 data_raw <- read.csv('kurd_kurdistan.csv', stringsAsFactors = FALSE)
+world_df <- map_data('world')
 
 #Process data
 data_proc <- data_raw %>%
@@ -59,6 +61,28 @@ data(data_proc)
 xtable(data_proc[1:10, ])
 
 
+#Map of violent incidents
+
+
+#Animated Map Plot
+map <- ggplot() +
+  geom_polygon(data = world_df %>% filter(region == 'Turkey'|region == 'Iraq'|region=='Syria'),
+                                          aes(x=long, y=lat, fill=region, group=group))+
+  geom_point(data = data_raw, aes(y=latitude,x=longitude, frame=year),color="yellow")+
+  ylab("Longitude")+
+  xlab("Latitude")+
+  scale_fill_discrete(name="Country")+
+  labs(title='Incidents of Violence: Turkey Kurdistan Conflict', subtitle='Turkey and Local Regions, 1989-2015')
+
+#animation_opts(map, frame = 1000, easing = "linear")
+
+ggplotly(map)
+  
+  #+
+  #theme(panel.background = element_rect(fill = "lightblue",
+                                      #  colour = "lightblue"))
+  # Make sure that the ratio of the world map always works
+  # remove the axes lines and the background colour
 
 
   

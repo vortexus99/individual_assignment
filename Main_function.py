@@ -11,7 +11,8 @@ with open('turkey_kurdistan.json') as file: #write to list
 
 #Produce Json file
 
-select_vars = ["year","country","side_a","side_b","deaths_a","deaths_b", "deaths_civilians"] #add select_vars/select variables
+#Add select_vars/select variables
+select_vars = ["year","country","side_a","side_b","deaths_a","deaths_b", "deaths_civilians","latitude","longitude"] 
 turkey_kurd_filt = [] #init list for filtered json
 
 
@@ -38,12 +39,13 @@ with open('kurd_kurdistan.csv', 'w') as file:
 
 print('Done')
 
-#Checking for countries other that turkey
+#Checking for countries other that turkey (^comment out for file production^)
 
+'''
 counter = 0
 for incident in turkey_kurd_filt: #run filtered to print and count up
     if incident['country'] != 'Turkey':
         print(incident['country'])
         counter += 1
 print(counter)
-
+'''
